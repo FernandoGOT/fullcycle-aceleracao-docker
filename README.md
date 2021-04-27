@@ -1,35 +1,9 @@
 # Execute as simple docker images
 
-## Build the images
-
-### Mysql
-
-```bash
-docker build -t db ./mysql
-```
-
-### Node
-
-```bash
-docker build -t node ./nodejs
-```
-
-### Nginx
-
-```bash
-docker build -t nginx ./nginx
-```
-
 ## Create the network
 
 ```bash
-docker network create --driver bridge fullcycle-aceleracao
-```
-
-## Clear db folder
-
-```bash
-sudo rm -rf ./mysql/db
+docker network create --driver bridge fullcycle-aceleracao-docker
 ```
 
 ## Run dockers
@@ -37,7 +11,7 @@ sudo rm -rf ./mysql/db
 ### DB (MySQL)
 
 ```bash
-docker run -d --rm --name db --network fullcycle-aceleracao --mount type=bind,source="$(pwd)"/mysql/db,target=/var/lib/mysql db
+docker run -d --rm --name db --network fullcycle-aceleracao-docker --mount type=bind,source="$(pwd)"/mysql/db,target=/var/lib/mysql fernandogot/mysql:fullcycle-aceleracao-docker
 ```
 
 Wait and execute
@@ -57,21 +31,27 @@ Continue if there is such message, if not, try again in a moment
 ### Node
 
 ```bash
-docker run -d --rm --name node --network fullcycle-aceleracao node
+docker run -d --rm --name node --network fullcycle-aceleracao-docker fernandogot/node:fullcycle-aceleracao-docker
 ```
 
 ### Nginx
 
 ```bash
-docker run -d --rm --name nginx --network fullcycle-aceleracao -p 80:80 nginx
+docker run -d --rm --name nginx --network fullcycle-aceleracao-docker -p 80:80 fernandogot/nginx:fullcycle-aceleracao-docker
 ```
 
 ## Test
 
 Access the [`localhost`](http://localhost/) page
 
-# Stop dockers
+## Clear data
 
 ```bash
-docker stop nginx && docker stop node && docker stop db
+docker stop nginx && docker stop node && docker stop db && docker network rm fullcycle-aceleracao-docker
+```
+
+remove the db files (WLS or Unix)
+
+```bash
+sudo rm -rf ./mysql/db
 ```
