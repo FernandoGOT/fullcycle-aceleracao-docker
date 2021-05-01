@@ -1,12 +1,52 @@
 version: '3.4'
 
 services:
-  nodejs:
-    image: nodejs
+  nginx:
+    build:
+      context: nginx
+      dockerfile: ./Dockerfile
+    container_name: nginx
+    restart: always
+    tty: true
+    depends_on:
+      - node
+    ports:
+      - 8000:80
+    networks:
+      - fullcycle-aceleracao-docker-nginx
+
+  node:
     build:
       context: nodejs
       dockerfile: ./Dockerfile
+    tty: true
+    container_name: node
+    entrypoint: dockerize -wait tcp://db:3306 -timeout 20s docker-entrypoint.sh
+    command: node index.js
+    depends_on:
+      - db
+    networks:
+      - fullcycle-aceleracao-docker-db
+      - fullcycle-aceleracao-docker-nginx
+
+  db:
+    image: mysql:5.7
+    command: --innodb-use-native-aio=0
+    container_name: db
+    restart: always
+    tty: true
+    volumes:
+      - ./dbdata:/var/lib/mysql
+      - ./mysql:/docker-entrypoint-initdb.d
     environment:
-      NODE_ENV: production
-    ports:
-      - 3000:3000
+      - LANG=C.UTF-8
+      - MYSQL_DATABASE=nodedb
+      - MYSQL_ROOT_PASSWORD=root
+    networks:
+      - fullcycle-aceleracao-docker-db
+
+networks:
+  fullcycle-aceleracao-docker-db:
+    driver: bridge
+  fullcycle-aceleracao-docker-nginx:
+    driver: bridge
